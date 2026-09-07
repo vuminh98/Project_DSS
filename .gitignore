@@ -1,0 +1,9 @@
+backend/.venv/
+backend/__pycache__/
+backend/**/*.pyc
+backend/data/germany/source/*
+backend/data/germany/processed/*
+backend/data/germany/results/*
+!backend/data/**/.gitkeep
+frontend/config.local.js
+

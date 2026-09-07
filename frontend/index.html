@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Germany Multi-Hazard DSS</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header><div><span class="eyebrow">PoMHaZ prototype</span><h1>Spatial Decision Support System</h1></div><span class="phase">Phase 1</span></header>
+  <main>
+    <section id="access-view" class="panel hero">
+      <p class="step">Step 1 of 3</p><h2>Start a risk assessment</h2>
+      <p>Explore a prepared public study case without signing in.</p>
+      <button id="public-access">Public Access</button>
+    </section>
+    <section id="country-view" class="hidden">
+      <div class="section-title"><div><p class="step">Step 2 of 3</p><h2>Select a study case</h2></div><button class="secondary" data-back="access-view">Back</button></div>
+      <div id="map"></div>
+      <p id="map-status" class="status">Select Germany on the map.</p>
+    </section>
+    <section id="scenario-view" class="hidden">
+      <div class="section-title"><div><p class="step">Step 3 of 3</p><h2>Germany — Scenario 1</h2></div><button class="secondary" data-back="country-view">Back</button></div>
+      <div class="workspace">
+        <div class="panel"><h3>Select input factors</h3><p class="muted">Choose 2–5 mining or geological factors. Availability comes from the Python API.</p><div id="hazards"></div></div>
+        <div class="panel"><h3>Interaction chain</h3><p class="muted">Set Iᵢ for each input. Nᵢ is calculated from its number of connections.</p><div id="interactions"></div></div>
+      </div>
+      <button id="calculate">Calculate and draw SHI</button><p id="result" class="status"></p>
+      <div id="result-map" class="hidden"></div>
+      <div id="legend" class="hidden legend"><strong>SHI class</strong><div id="legend-items"></div></div>
+    </section>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
