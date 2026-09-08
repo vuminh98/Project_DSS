@@ -3,35 +3,118 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Germany Multi-Hazard DSS</title>
+  <meta name="description" content="Spatial Decision Support System for post-mining multi-hazard assessment">
+  <title>PoMHaZ · Multi-Hazard DSS</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header><div><span class="eyebrow">PoMHaZ prototype</span><h1>Spatial Decision Support System</h1></div><span class="phase">Phase 1</span></header>
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="PoMHaZ home">
+      <span class="brand-mark" aria-hidden="true">P</span>
+      <span><strong>PoMHaZ</strong><small>Spatial Decision Support System</small></span>
+    </a>
+    <div class="header-meta"><span class="status-dot"></span> Germany study case</div>
+  </header>
+
   <main>
-    <section id="access-view" class="panel hero">
-      <p class="step">Step 1 of 3</p><h2>Start a risk assessment</h2>
-      <p>Explore a prepared public study case without signing in.</p>
-      <button id="public-access">Public Access</button>
-    </section>
-    <section id="country-view" class="hidden">
-      <div class="section-title"><div><p class="step">Step 2 of 3</p><h2>Select a study case</h2></div><button class="secondary" data-back="access-view">Back</button></div>
-      <div id="map"></div>
-      <p id="map-status" class="status">Select Germany on the map.</p>
-    </section>
-    <section id="scenario-view" class="hidden">
-      <div class="section-title"><div><p class="step">Step 3 of 3</p><h2>Germany — Scenario 1</h2></div><button class="secondary" data-back="country-view">Back</button></div>
-      <div class="workspace">
-        <div class="panel"><h3>Select input factors</h3><p class="muted">Choose 2–5 mining or geological factors. Availability comes from the Python API.</p><div id="hazards"></div></div>
-        <div class="panel"><h3>Interaction chain</h3><p class="muted">Set Iᵢ for each input. Nᵢ is calculated from its number of connections.</p><div id="interactions"></div></div>
+    <nav class="stepper" aria-label="Assessment progress">
+      <div class="step-item active" data-progress="country"><span>1</span><div><small>Study area</small><strong>Select country</strong></div></div>
+      <i></i>
+      <div class="step-item" data-progress="scenarios"><span>2</span><div><small>Configuration</small><strong>Build scenarios</strong></div></div>
+      <i></i>
+      <div class="step-item" data-progress="result"><span>3</span><div><small>Output</small><strong>View SHI map</strong></div></div>
+    </nav>
+
+    <section id="country-view" class="view active-view">
+      <div class="page-heading">
+        <div><p class="kicker">Public access · Study cases</p><h1>Select a country</h1><p>Choose an available study area to begin the multi-hazard assessment.</p></div>
+        <span class="data-badge">1 study case available</span>
       </div>
-      <button id="calculate">Calculate and draw SHI</button><p id="result" class="status"></p>
-      <div id="result-map" class="hidden"></div>
-      <div id="legend" class="hidden legend"><strong>SHI class</strong><div id="legend-items"></div></div>
+      <div class="map-shell">
+        <div id="country-map" aria-label="Map for choosing a country"></div>
+        <aside class="map-card">
+          <p class="kicker">Available study</p><h2>Southern Ruhr</h2><p>Germany</p>
+          <dl><div><dt>Input factors</dt><dd>5</dd></div><div><dt>Raster status</dt><dd id="raster-status">Checking…</dd></div></dl>
+          <button id="select-germany" class="primary">Select Germany <span>→</span></button>
+          <p id="country-message" class="form-message" role="status"></p>
+        </aside>
+      </div>
+    </section>
+
+    <section id="scenario-view" class="view hidden">
+      <div class="page-heading compact">
+        <div><button class="text-button" data-back="country-view">← Change study area</button><p class="kicker">Germany · Southern Ruhr</p><h1 id="module-title">Multi-Hazard scenarios</h1><p id="module-description">Select the number of scenarios, then configure the hazard factors and their interaction levels.</p></div>
+        <div class="recommendation-wrap">
+          <button class="recommendation-button" id="recommendation-button" aria-expanded="false" aria-describedby="recommendation-tooltip"><span aria-hidden="true">💡</span> Recommendation</button>
+          <aside class="recommendation-tooltip" id="recommendation-tooltip" role="tooltip">
+            <span class="tooltip-arrow" aria-hidden="true"></span>
+            <p><strong>All project partners (INERIS, CERTH, GIG, THGA, PPC, and SRK)</strong> collaborated to assess the interactions between Mining Hazards and Natural Hazards. It is recommended to use the following interaction matrix when developing each scenario:</p>
+            <figure><img src="assets/full-interaction-matrix.png" alt="Interaction Matrix for Post-mining Multi-Hazards"><figcaption>Interaction Matrix for Post-mining Hazards</figcaption></figure>
+            <p class="tooltip-note">Use the matrix as methodological guidance. The five factors in this prototype retain the project-specific values entered in each scenario.</p>
+          </aside>
+        </div>
+      </div>
+
+      <nav class="module-tabs" aria-label="Assessment modules">
+        <button class="module-tab active" data-module="mhi"><span>01</span><div><strong>Multi-Hazard Index</strong><small>Scenario interaction</small></div></button>
+        <button class="module-tab" data-module="exposure"><span>02</span><div><strong>Exposed Elements</strong><small>Land Use / Land Cover</small></div></button>
+      </nav>
+
+      <div id="mhi-module" class="module-panel">
+        <div class="workflow-card scenario-generator">
+          <div><span class="number">01</span><div><h2>Generate scenarios</h2><p>Create between one and five independent assessment scenarios.</p></div></div>
+          <label for="scenario-count">Number of scenarios<select id="scenario-count"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+          <button id="generate-scenarios" class="primary">Generate scenarios</button>
+        </div>
+
+        <div id="scenario-list" class="scenario-list"></div>
+        <div id="submit-bar" class="submit-bar hidden">
+          <div><strong>Ready to calculate?</strong><p>Submit generates the SHI map for every configured scenario.</p></div>
+          <button id="submit-scenarios" class="primary large">Submit assessment <span>→</span></button>
+        </div>
+        <p id="submit-message" class="form-message centered" role="status"></p>
+      </div>
+
+      <section id="exposure-module" class="module-panel hidden">
+        <div class="workflow-card exposure-intro">
+          <div class="module-icon" aria-hidden="true">▦</div>
+          <div><p class="kicker">Independent assessment module</p><h2>Expose elements</h2><h3>Land Use / Land Cover</h3><p>The Element at Risk (EAR) to be evaluated comes from the Land Use and Land Cover layer retrieved from <a class="source-link" href="https://www.arcgis.com/home/item.html?id=cfcb7609de5f478eb7666240902d4d3d" target="_blank" rel="noopener noreferrer">ESRI 2024 LU/LC pre-classified dataset <span aria-hidden="true">↗</span></a>.</p><p class="exposure-guidance">To follow the calculation of the EAR factor, define the level of significance of each element:</p></div>
+          <button id="generate-exposure-matrix" class="primary">Generate matrix</button>
+        </div>
+
+        <div id="exposure-matrix" class="workflow-card exposure-matrix hidden">
+          <div class="matrix-heading"><div><span class="number">02</span><div><h2>Class significance matrix</h2><p>Assign a level from 1 (very low) to 9 (very high) to each LULC class.</p></div></div><span class="matrix-status">8 classes</span></div>
+          <div id="lulc-grid" class="lulc-grid"></div>
+          <div class="exposure-actions"><button id="reset-exposure" class="utility">Reset values</button><button id="send-exposure" class="primary large">Send and generate EAR hazard <span>→</span></button></div>
+          <p id="exposure-message" class="form-message" role="status"></p>
+        </div>
+
+        <div id="exposure-output" class="workflow-card exposure-output hidden">
+          <div class="output-check" aria-hidden="true">✓</div><div><p class="kicker">Configuration accepted</p><h2>EAR hazard is ready to generate</h2><p>The eight selected class levels have been captured. Raster calculation and map generation will be connected when the official EAR formula is provided.</p><div id="exposure-summary" class="exposure-summary"></div></div>
+          <button id="edit-exposure" class="outline">Edit values</button>
+        </div>
+      </section>
+    </section>
+
+    <section id="result-view" class="view hidden">
+      <div class="page-heading compact">
+        <div><button class="text-button" data-back="scenario-view">← Edit scenarios</button><p class="kicker">Assessment output</p><h1>Sinkhole Hazard Index</h1><p>Calculated per cell using SHI = Σ(Hᵢ × Nᵢ × Iᵢ).</p></div>
+        <button id="new-assessment" class="outline">New assessment</button>
+      </div>
+      <div class="result-layout">
+        <aside class="result-panel">
+          <h2>Map layers</h2><div id="result-tabs" class="result-tabs"></div>
+          <div class="metric-grid"><div><small>Raw minimum</small><strong id="raw-min">—</strong></div><div><small>Raw maximum</small><strong id="raw-max">—</strong></div></div>
+          <div class="legend"><p>Relative SHI class</p><div id="legend-items"></div><div class="legend-labels"><span>Lower</span><span>Higher</span></div></div>
+          <p class="map-note">Classes 1–9 currently use equal intervals of the theoretical maximum.</p>
+        </aside>
+        <div class="result-map-wrap"><div id="result-map"></div><div id="map-loading" class="map-loading hidden"><span></span>Calculating raster…</div></div>
+      </div>
     </section>
   </main>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="app.js"></script>
 </body>
